@@ -30,6 +30,14 @@ let
     # The default wraps the interpreter in a shell script, which would add a
     # shell start to every x86 process.
     wrapInterpreterInShell = false;
+    # FEX's own registration uses the flags POCF. F matters most: the kernel
+    # opens the interpreter when it is registered, so x86 binaries still run
+    # inside pressure-vessel containers, whose mount namespace has no
+    # /nix/store to find FEXInterpreter in.
+    preserveArgvZero = true;
+    openBinary = true;
+    matchCredentials = true;
+    fixBinary = true;
   };
 in
 {
