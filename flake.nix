@@ -405,6 +405,8 @@
           '';
         };
 
+      flake.nixosModules.fex-host = import ./fex-host.nix;
+
       flake.overlays.default = final: prev: {
         muvm = final.callPackage ./muvm-patched.nix { inherit (prev) muvm; };
         libdbusmenu-gtk2 = final.callPackage ./libdbusmenu-gtk2.nix { };
