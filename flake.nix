@@ -507,9 +507,12 @@
             rootfs=$(grep -ao '/nix/store/[a-z0-9]*-steam-arm64-fhs-fhsenv-rootfs' \
               ${self'.packages.steam-arm64-fhs}/bin/steam-arm64-fhs | head -1)
             test -n "$rootfs"
-            for h in steamos-update steamos-select-branch steamos-wifi-set-backend \
+            for h in steamos-update steamos-polkit-helpers/steamos-update \
+              steamos-select-branch steamos-polkit-helpers/steamos-select-branch \
+              steamos-wifi-set-backend \
               steamos-polkit-helpers/steamos-priv-write \
-              steamos-polkit-helpers/steamos-set-timezone; do
+              steamos-set-timezone steamos-polkit-helpers/steamos-set-timezone \
+              steamos-set-hostname steamos-polkit-helpers/steamos-set-hostname; do
               test -x "$rootfs/usr/bin/$h" || {
                 echo "the FHS has no /usr/bin/$h, which the client calls in Deck mode"
                 exit 1
@@ -521,6 +524,19 @@
               echo "steamos-update must exit 7 (no update available)"
               exit 1
             }
+            set -e
+            HOME=$(mktemp -d)
+            export HOME
+            test "$("$rootfs/usr/bin/steamos-select-branch" -c)" = "rel"
+            mkdir -p "$HOME/.local/share/Steam/package"
+            printf 'steamdeck_publicbeta\n' >"$HOME/.local/share/Steam/package/beta"
+            test "$("$rootfs/usr/bin/steamos-select-branch" -c)" = "beta"
+            "$rootfs/usr/bin/steamos-polkit-helpers/steamos-select-branch" preview
+            test "$("$rootfs/usr/bin/steamos-select-branch" -c)" = "preview"
+            grep -q 'org.freedesktop.timedate1.SetTimezone' \
+              "$rootfs/usr/bin/steamos-polkit-helpers/steamos-set-timezone"
+            grep -q 'org.freedesktop.hostname1.SetHostname' \
+              "$rootfs/usr/bin/steamos-polkit-helpers/steamos-set-hostname"
             touch "$out"
           '';
 

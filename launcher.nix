@@ -50,7 +50,12 @@ runCommand ("steam-arm64" + lib.optionalString (channel != "stable") "-beta")
     meta = {
       description =
         "Valve's aarch64 Steam client"
-        + (if useMuvm then ", launched in the 4K-page guest its binaries need" else ", launched directly in its FHS sandbox");
+        + (
+          if useMuvm then
+            ", launched in the 4K-page guest its binaries need"
+          else
+            ", launched directly in its FHS sandbox"
+        );
       license = lib.licenses.unfree;
       platforms = [ "aarch64-linux" ];
       mainProgram = "steam-arm64";

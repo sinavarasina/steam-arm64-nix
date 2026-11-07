@@ -105,11 +105,15 @@ x86 client follows the same channel.
 
 Started with `-steamos3 -steampal -steamdeck -clientbeta steamdeck_publicbeta`
 (after `-gamepadui`), the client shows the Deck settings pages, Wi-Fi and
-Bluetooth among them. It calls a few SteamOS helper scripts by path, so the FHS
-sandbox carries stand-ins for them under `/usr/bin` (`steamos-stubs.nix`): each
-answers "nothing to do", and the Wi-Fi backend stays whatever the host runs.
-The host still has to provide NetworkManager and BlueZ and let the session
-user use them.
+Bluetooth among them. It calls several SteamOS helper scripts under `/usr/bin`
+and `/usr/bin/steamos-polkit-helpers`, which the FHS sandbox provides through
+`steamos-stubs.nix`: `steamos-set-timezone` and `steamos-set-hostname` forward
+changes over the system D-Bus to `systemd-timedated` and `systemd-hostnamed`,
+`steamos-select-branch` reports and records the active branch (`rel`, `beta`,
+`preview`) from `package/beta` or user state, `steamos-update` exits 7 ("no
+update available"), and the Wi-Fi backend stays whatever the host runs. The
+host still has to provide NetworkManager and BlueZ and let the session user use
+them.
 
 `-clientbeta` and `package/beta` must name the same channel or the client keeps
 exiting 42. When the arguments carry `-clientbeta`, the launcher writes that
