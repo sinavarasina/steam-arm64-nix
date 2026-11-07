@@ -509,6 +509,7 @@
             test -n "$rootfs"
             for h in steamos-update steamos-polkit-helpers/steamos-update \
               steamos-select-branch steamos-polkit-helpers/steamos-select-branch \
+              steamos-session-select \
               steamos-wifi-set-backend \
               steamos-polkit-helpers/steamos-priv-write \
               steamos-set-timezone steamos-polkit-helpers/steamos-set-timezone \
@@ -533,6 +534,8 @@
             test "$("$rootfs/usr/bin/steamos-select-branch" -c)" = "beta"
             "$rootfs/usr/bin/steamos-polkit-helpers/steamos-select-branch" preview
             test "$("$rootfs/usr/bin/steamos-select-branch" -c)" = "preview"
+            "$rootfs/usr/bin/steamos-session-select" plasma
+            test "$(cat "$HOME/.local/state/steamos-session-select")" = "plasma"
             grep -q 'org.freedesktop.timedate1.SetTimezone' \
               "$rootfs/usr/bin/steamos-polkit-helpers/steamos-set-timezone"
             grep -q 'org.freedesktop.hostname1.SetHostname' \

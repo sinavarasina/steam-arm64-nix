@@ -104,16 +104,18 @@ x86 client follows the same channel.
 ### Deck mode
 
 Started with `-steamos3 -steampal -steamdeck -clientbeta steamdeck_publicbeta`
-(after `-gamepadui`), the client shows the Deck settings pages, Wi-Fi and
-Bluetooth among them. It calls several SteamOS helper scripts under `/usr/bin`
-and `/usr/bin/steamos-polkit-helpers`, which the FHS sandbox provides through
-`steamos-stubs.nix`: `steamos-set-timezone` and `steamos-set-hostname` forward
-changes over the system D-Bus to `systemd-timedated` and `systemd-hostnamed`,
-`steamos-select-branch` reports and records the active branch (`rel`, `beta`,
-`preview`) from `package/beta` or user state, `steamos-update` exits 7 ("no
-update available"), and the Wi-Fi backend stays whatever the host runs. The
-host still has to provide NetworkManager and BlueZ and let the session user use
-them.
+(after `-gamepadui`, typically inside `gamescope -e --`), the client shows the
+Deck settings pages, Wi-Fi and Bluetooth among them. It calls several SteamOS
+helper scripts under `/usr/bin` and `/usr/bin/steamos-polkit-helpers`, which
+the FHS sandbox provides through `steamos-stubs.nix`: `steamos-set-timezone`
+and `steamos-set-hostname` forward changes over the system D-Bus to
+`systemd-timedated` and `systemd-hostnamed`, `steamos-select-branch` reports
+and records the active branch (`rel`, `beta`, `preview`) from `package/beta` or
+user state, `steamos-session-select` records the target session in
+`$XDG_STATE_HOME/steamos-session-select` and shuts the client down cleanly on
+"Switch to Desktop", `steamos-update` exits 7 ("no update available"), and the
+Wi-Fi backend stays whatever the host runs. The host still has to provide
+NetworkManager and BlueZ and let the session user use them.
 
 `-clientbeta` and `package/beta` must name the same channel or the client keeps
 exiting 42. When the arguments carry `-clientbeta`, the launcher writes that

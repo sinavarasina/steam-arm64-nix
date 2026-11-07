@@ -3,8 +3,9 @@
 # /usr/bin/steamos-polkit-helpers. Timezone and hostname changes are forwarded
 # over the system D-Bus to systemd-timedated and systemd-hostnamed on the host
 # (reachable both directly and through muvm's system bus bridge), branch
-# queries read the active Steam client channel dynamically, and OS-update or
-# hardware-sysfs helpers answer "nothing to do" on a NixOS host.
+# queries read the active Steam client channel dynamically, session switching
+# records the target session and shuts the client down cleanly, and OS-update
+# or hardware-sysfs helpers answer "nothing to do" on a NixOS host.
 { linkFarm, writeShellScript }:
 let
   noop = name: writeShellScript name "exit 0";
@@ -52,6 +53,21 @@ let
     esac
   '';
 
+  # Power -> Switch to Desktop invokes `steamos-session-select plasma` via
+  # system(). Record the requested session in XDG_STATE_HOME for a session
+  # wrapper or display manager to read, then ask the running client to shut
+  # down in the background so system() returns 0 and the launcher loop exits.
+  steamosSessionSelect = writeShellScript "steamos-session-select" ''
+    session="''${1:-plasma}"
+    state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}"
+    steam_root="''${STEAM_ARM64_ROOT:-''${XDG_DATA_HOME:-$HOME/.local/share}/Steam}"
+    mkdir -p -- "$state_dir"
+    printf '%s\n' "$session" >"$state_dir/steamos-session-select"
+    if [ -x "$steam_root/steamrtarm64/steam" ]; then
+      "$steam_root/steamrtarm64/steam" -shutdown >/dev/null 2>&1 &
+    fi
+  '';
+
   # timedatectl set-timezone talks to org.freedesktop.timedate1 on the system
   # bus. Calling the D-Bus method directly works both on the host and inside
   # the muvm guest over the bridged system bus, without needing systemd in FHS.
@@ -93,6 +109,8 @@ linkFarm "steamos-stubs" {
 
   "bin/steamos-select-branch" = steamosSelectBranch;
   "bin/steamos-polkit-helpers/steamos-select-branch" = steamosSelectBranch;
+
+  "bin/steamos-session-select" = steamosSessionSelect;
 
   # The client may ask for its Wi-Fi backend to become iwd. The host keeps the
   # backend it has (NetworkManager), so accept and change nothing.
